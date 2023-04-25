@@ -12,7 +12,8 @@ void CustomChat::onLoad()
 	_globalCvarManager = cvarManager;
 	cvarManager->registerNotifier("sendChat", [this](std::vector<std::string> args)
 		{
-			sendMessage("thisthisthisthisthisthisthisthisthisthisthisthisthisthisthisthisthisthisthisthisthisthisthisthisthisthisthisthisthisthisthisthisthisthis");
+			std::shared_ptr<std::string> msg(new std::string("msg to send"));
+			sendMessage(msg);
 		}, "", PERMISSION_ALL);
 }
 
@@ -31,26 +32,65 @@ void CustomChat::pressVk(short vk)
 	SendInput(ARRAYSIZE(inputs), inputs, sizeof(INPUT));
 }
 
+void CustomChat::shiftPressVk(short vk)
+{
+	INPUT inputs[4];
+	ZeroMemory(inputs, sizeof(inputs));
+
+	inputs[0].type = INPUT_KEYBOARD;
+	inputs[0].ki.wVk = VK_SHIFT;
+
+	inputs[1].type = INPUT_KEYBOARD;
+	inputs[1].ki.wVk = vk;
+
+	inputs[2].type = INPUT_KEYBOARD;
+	inputs[2].ki.wVk = vk;
+	inputs[2].ki.dwFlags = KEYEVENTF_KEYUP;
+
+	inputs[3].type = INPUT_KEYBOARD;
+	inputs[3].ki.wVk = VK_SHIFT;
+	inputs[3].ki.dwFlags = KEYEVENTF_KEYUP;
+
+	SendInput(ARRAYSIZE(inputs), inputs, sizeof(INPUT));
+}
+
 void CustomChat::pressKey(char c)
 {
 	auto inputLocale = GetKeyboardLayout(0);
 	auto virtualKey = VkKeyScanExA(c, inputLocale);
-	pressVk(virtualKey);
+	if (virtualKey & 0x100)
+	{
+		shiftPressVk(virtualKey);
+	} else
+	{
+		pressVk(virtualKey);
+	}
 }
 
-void CustomChat::sendMessage(const std::string& msg)
+void CustomChat::sendMessage(const std::shared_ptr<std::string>& msg)
 {
 	pressKey('t'); //Change based on keybind
-	/*
-	gameWrapper->SetTimeout([=](GameWrapper* gw) 
+	gameWrapper->SetTimeout([=](GameWrapper* gw)
 		{
-			for (char c : msg)
-			{
-				pressKey(c);
-			}
+			sendMessageR(msg, 0);
+		}, 0.01F);
+}
+
+void CustomChat::sendMessageR(const std::shared_ptr<std::string>& msg, int index)
+{
+	for (int i = index; i < index + 20; ++i)
+	{
+		if (i == msg->length())
+		{
 			pressVk(VK_RETURN);
-		}, 0.005);
-		*/
+			return;
+		}
+		pressKey((*msg)[i]);
+	}
+	gameWrapper->SetTimeout([=](GameWrapper* gw)
+		{
+			sendMessageR(msg, index + 20);
+		}, 0.001F);
 }
 
 void CustomChat::onUnload()

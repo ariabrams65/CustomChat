@@ -15,9 +15,11 @@ public:
 	virtual void onUnload();
 
 private:
-	void sendMessage(const std::string&);
+	void sendMessage(const std::shared_ptr<std::string>&);
+	void sendMessageR(const std::shared_ptr<std::string>& ,int);
 	void pressKey(char);
 	void pressVk(short);
+	void shiftPressVk(short);
 
 
 
