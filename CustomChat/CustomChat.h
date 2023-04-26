@@ -15,7 +15,7 @@ public:
 	virtual void onUnload();
 
 private:
-	void sendMessage(const std::shared_ptr<std::string>&);
+	void sendMessage(const std::shared_ptr<std::string>&, int=0);
 	void sendMessageR(const std::shared_ptr<std::string>& ,int);
 	void pressKey(char);
 	void pressVk(short);

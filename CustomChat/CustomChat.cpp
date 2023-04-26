@@ -12,7 +12,7 @@ void CustomChat::onLoad()
 	_globalCvarManager = cvarManager;
 	cvarManager->registerNotifier("sendChat", [this](std::vector<std::string> args)
 		{
-			std::shared_ptr<std::string> msg(new std::string("msg to send"));
+			std::shared_ptr<std::string> msg(new std::string("yo"));
 			sendMessage(msg);
 		}, "", PERMISSION_ALL);
 }
@@ -67,12 +67,12 @@ void CustomChat::pressKey(char c)
 	}
 }
 
-void CustomChat::sendMessage(const std::shared_ptr<std::string>& msg)
+void CustomChat::sendMessage(const std::shared_ptr<std::string>& msg, int index)
 {
 	pressKey('t'); //Change based on keybind
 	gameWrapper->SetTimeout([=](GameWrapper* gw)
 		{
-			sendMessageR(msg, 0);
+			sendMessageR(msg, index);
 		}, 0.01F);
 }
 
@@ -86,6 +86,16 @@ void CustomChat::sendMessageR(const std::shared_ptr<std::string>& msg, int index
 			return;
 		}
 		pressKey((*msg)[i]);
+
+		if (i % 120 == 119)
+		{
+			pressVk(VK_RETURN);
+			gameWrapper->SetTimeout([=](GameWrapper* gw)
+				{
+					sendMessage(msg, i + 1);
+				}, 0.001F);
+			return;
+		}
 	}
 	gameWrapper->SetTimeout([=](GameWrapper* gw)
 		{
